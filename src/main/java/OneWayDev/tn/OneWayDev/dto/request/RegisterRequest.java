@@ -28,7 +28,6 @@ public class RegisterRequest {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$", message = "Password must contain at least one lowercase letter, one uppercase letter, and one number.")
     private String password;
     @NotBlank(message = "phone number is required and cannot be blank.")
-    @Pattern(regexp = "\\d{8}", message = "Invalid phone number format. It should be 8 numbers.")
     private String mobileNumber;
     @Email(message = "inavalid mail format")
     @NotBlank(message = "email is required and cannot be blank.")

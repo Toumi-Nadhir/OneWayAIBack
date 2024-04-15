@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -185,20 +186,7 @@ public class AuthService {
         }
     }
 
-    public String forgotPassword(String mobileNumber) {
-        Optional<User> checkUser = userRepository.findByPhone(mobileNumber);
-        if (!checkUser.isPresent()) {
-            throw new MobileNumberExistsExecption("No user found with this mobile phone number");
-        }
-        User user = checkUser.get();
-        UUID randomUUID = UUID.randomUUID();
-        String code = randomUUID.toString().substring(0, 8);
-        String sms="Your verification code is: "+code ;
-        sendSms(mobileNumber, sms, INFOBIP_SENDER_NAME);
-        user.setPassword(bCryptPasswordEncoder.encode(code));
-        userRepository.save(user);
-        return code;
-    }
+
     public void sendSms(String to, String body, String senderName) {
         try {
             OkHttpClient client = new OkHttpClient();
@@ -223,4 +211,66 @@ public class AuthService {
         }
     }
 
+
+
+
+    // In AuthService.java
+    public void forgotPassword(String email) {
+        // Find the user by email
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (!optionalUser.isPresent()) {
+            throw new UsernameNotFoundException("No user found with email: " + email);
+        }
+        User user = optionalUser.get();
+
+        // Generate a unique token
+        String token = String.format("%04d", new Random().nextInt(10000));
+
+        // Create a MailToken entity and save it in the database
+        MailToken mailToken = new MailToken(
+                token,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(15),
+                user
+        );
+        mailTokenService.saveConfirmationToken(mailToken);
+
+        // Send the code to the user's email
+        emailService.sendEmail(
+                email,
+                "Your verification code is: " + token
+        );
+    }
+
+    public void verifyCode(String code) {
+        // Find the MailToken by token
+        Optional<MailToken> optionalMailToken = mailTokenService.getToken(code);
+        if (!optionalMailToken.isPresent()) {
+            throw new IllegalArgumentException("Invalid code");
+        }
+
+        // Check if the code is expired
+        MailToken mailToken = optionalMailToken.get();
+        if (mailToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Code expired");
+        }
+    }
+
+    public void resetPassword(String token, String password, String confirmPassword) {
+        // Check if the password and confirmPassword are the same
+        if (!password.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
+
+        // Find the user by token
+        Optional<MailToken> optionalMailToken = mailTokenService.getToken(token);
+        if (!optionalMailToken.isPresent()) {
+            throw new IllegalArgumentException("Invalid code");
+        }
+        User user = optionalMailToken.get().getUser();
+
+        // Update the user's password
+        user.setPassword(bCryptPasswordEncoder.encode(password));
+        userRepository.save(user);
+    }
 }

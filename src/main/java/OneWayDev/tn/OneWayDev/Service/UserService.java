@@ -21,6 +21,12 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email " + email));
+    }
+
     public Page<User>findUserswithPaginationAndSorting(int offset, int pageSize, String field, String roleType){
         Page<User> users = userRepository.findByRolesRoleType(RoleType.valueOf(roleType), PageRequest.of(offset, pageSize, Sort.by(field)));
         return users;

@@ -1,6 +1,7 @@
 package OneWayDev.tn.OneWayDev.Entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,7 @@ public class MailToken {
 
     private LocalDateTime confirmedAt;
 
+    @JsonIgnore
     @ManyToOne
     private User user;
 

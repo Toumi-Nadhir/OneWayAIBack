@@ -35,8 +35,9 @@ public class User implements UserDetails {
     @ManyToMany
     @JsonIgnore
     private List<Role>roles;
-    @OneToMany(mappedBy = "user")
-    private List<MailToken>mailTokens;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MailToken> mailTokens;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
