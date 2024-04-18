@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -95,12 +96,22 @@ public class AuthController {
 
 
     // In AuthController.java
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+@PostMapping("/forgot-password")
+public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
+    Map<String, String> response = new HashMap<>();
+    try {
         String email = request.get("email");
         authenticationService.forgotPassword(email);
-        return ResponseEntity.ok().body("Reset password email sent");
+        response.put("message", "Reset password email sent");
+        return ResponseEntity.ok().body(response);
+    } catch (UsernameNotFoundException e) {
+        response.put("error", "User not found with email: " + request.get("email"));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    } catch (Exception e) {
+        response.put("error", "An unexpected error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+}
 
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
