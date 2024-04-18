@@ -103,5 +103,13 @@ public class MailConfirmationService {
                 "</div></div>";
     }
 
+    public String buildEmailPass(String name, String link) {
+        // ... email content ...
+        return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
+                // ... more email content ...
+                " <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n" +
+                // ... more email content ...
+                "</div></div>";
+    }
 
 }

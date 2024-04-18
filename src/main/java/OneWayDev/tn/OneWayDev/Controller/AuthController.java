@@ -6,8 +6,10 @@ import OneWayDev.tn.OneWayDev.Service.AuthService;
 import OneWayDev.tn.OneWayDev.Service.MailConfirmationService;
 import OneWayDev.tn.OneWayDev.Service.UserService;
 import OneWayDev.tn.OneWayDev.dto.request.AuthenticationRequest;
+import OneWayDev.tn.OneWayDev.dto.request.CustomErrorResponse;
 import OneWayDev.tn.OneWayDev.dto.request.RegisterRequest;
 import OneWayDev.tn.OneWayDev.exception.EmailExistsExecption;
+import OneWayDev.tn.OneWayDev.exception.InvalidPasswordException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,13 +42,12 @@ public class AuthController {
             return new ResponseEntity<>(authenticationService.register(registerRequestDTO), HttpStatus.CREATED);
         }
         catch (EmailExistsExecption e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new CustomErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage()), HttpStatus.CONFLICT);
         } catch (Exception e) {
             System.out.println(e.getClass().getName());
             System.out.println(e.getMessage());
-            return new ResponseEntity<>("An unexpected error occurred try again", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new CustomErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
     @GetMapping( "/confirm")
     public String confirm(@RequestParam("token") String token) {
@@ -108,12 +109,18 @@ public class AuthController {
         return ResponseEntity.ok().body("Code verified");
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String password = request.get("password");
-        String confirmPassword = request.get("confirmPassword");
-        authenticationService.resetPassword(token, password, confirmPassword);
-        return ResponseEntity.ok().body("Password reset successfully");
+   @PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    String token = request.get("token");
+    String password = request.get("password");
+    String confirmPassword = request.get("confirmPassword");
+
+    String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$";
+    if (!password.matches(pattern)) {
+        throw new InvalidPasswordException("Password must contain at least one lowercase letter, one uppercase letter, and one number.");
     }
+
+    authenticationService.resetPassword(token, password, confirmPassword);
+    return ResponseEntity.ok().body("Password reset successfully");
+}
 }
