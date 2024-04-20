@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,10 +28,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with email " + email));
     }
 
-    public Page<User>findUserswithPaginationAndSorting(int offset, int pageSize, String field, String roleType){
+  /*  public Page<User>findUserswithPaginationAndSorting(int offset, int pageSize, String field, String roleType){
         Page<User> users = userRepository.findByRolesRoleType(RoleType.valueOf(roleType), PageRequest.of(offset, pageSize, Sort.by(field)));
         return users;
-    }
+    }*/
 
     public User findUserById(Long idUser){
        Optional<User>  user= userRepository.findById(idUser);
@@ -76,4 +77,8 @@ public class UserService {
         return userRepository.enableAppUser(email);
     }
 
+
+    public List<User> getAllUsers() {
+        return userRepository.findByRolesRoleType(RoleType.USER);
+    }
 }

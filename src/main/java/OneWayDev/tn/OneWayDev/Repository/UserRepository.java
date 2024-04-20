@@ -9,12 +9,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User>findByEmail(String email);
     Optional<User>findByPhone(String mobileNumber);
-    Page<User> findByRolesRoleType(RoleType type, Pageable pageable);
+    List<User> findByRolesRoleType(RoleType roleType);
+
+    // Page<User> findByRolesRoleType(RoleType type, Pageable pageable);
     @Transactional
     @Modifying
     @Query("UPDATE User u " +

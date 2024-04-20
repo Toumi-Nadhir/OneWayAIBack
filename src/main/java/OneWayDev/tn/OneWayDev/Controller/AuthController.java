@@ -113,25 +113,40 @@ public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<Strin
     }
 }
 
-    @PostMapping("/verify-code")
-    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
+@PostMapping("/verify-code")
+public ResponseEntity<Map<String, String>> verifyCode(@RequestBody Map<String, String> request) {
+    Map<String, String> response = new HashMap<>();
+    try {
         String code = request.get("code");
         authenticationService.verifyCode(code);
-        return ResponseEntity.ok().body("Code verified");
+        response.put("message", "Code verified");
+        return ResponseEntity.ok().body(response);
+    } catch (Exception e) {
+        response.put("error", "An unexpected error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+}
 
-   @PostMapping("/reset-password")
-public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-    String token = request.get("token");
-    String password = request.get("password");
-    String confirmPassword = request.get("confirmPassword");
+ @PostMapping("/reset-password")
+public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
+    Map<String, String> response = new HashMap<>();
+    try {
+        String token = request.get("token");
+        String password = request.get("password");
+        String confirmPassword = request.get("confirmPassword");
 
-    String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$";
-    if (!password.matches(pattern)) {
-        throw new InvalidPasswordException("Password must contain at least one lowercase letter, one uppercase letter, and one number.");
+        String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$";
+        if (!password.matches(pattern)) {
+            response.put("error", "Password must contain at least one lowercase letter, one uppercase letter, and one number.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        authenticationService.resetPassword(token, password, confirmPassword);
+        response.put("message", "Password reset successfully");
+        return ResponseEntity.ok().body(response);
+    } catch (Exception e) {
+        response.put("error", "An unexpected error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
-
-    authenticationService.resetPassword(token, password, confirmPassword);
-    return ResponseEntity.ok().body("Password reset successfully");
 }
 }
