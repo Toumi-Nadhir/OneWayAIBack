@@ -163,28 +163,6 @@ public class AuthService {
         return idToken;
     }
 
-    public String uploadFile(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException(" Photo profile is required ,should select a photo");
-        }
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
-        try {
-            if (filename.contains("..")) {
-                throw new IllegalArgumentException("Cannot upload file with relative path outside current directory");
-            }
-            Path uploadDir = Paths.get("src/main/resources/upload");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            Path filePath = uploadDir.resolve(filename);
-            Files.copy(file.getInputStream(), filePath);
-            return filename;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to store file " + filename, e);
-        }
-    }
 
 
     public void sendSms(String to, String body, String senderName) {

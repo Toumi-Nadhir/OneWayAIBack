@@ -12,7 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,4 +86,33 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findByRolesRoleType(RoleType.USER);
     }
+
+   public String uploadFile(MultipartFile file) {
+    if (file.isEmpty()) {
+        throw new IllegalArgumentException("Photo profile is required, should select a photo");
+    }
+    String filename = StringUtils.cleanPath(file.getOriginalFilename());
+    try {
+        if (filename.contains("..")) {
+            throw new IllegalArgumentException("Cannot upload file with relative path outside current directory");
+        }
+        Path uploadDir = Paths.get("src/main/resources/uploads");
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        Path filePath = uploadDir.resolve(filename);
+        if (Files.exists(filePath)) {
+            // If file already exists, return the filename to save it in user's profile
+            return filename;
+        }
+
+        Files.copy(file.getInputStream(), filePath);
+        return filename;
+
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to store file " + filename, e);
+    }
+}
+
 }

@@ -21,6 +21,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +36,7 @@ public class AuthController {
 
     private AuthService authenticationService;
     private final MailConfirmationService mailConfirmationService;
-    private UserService userService;
-    private UserRepository userRepository;
+
     @PostMapping("/register")
     public ResponseEntity<?> registerStudent(@RequestBody @Valid RegisterRequest registerRequestDTO){
         try {
@@ -149,4 +149,5 @@ public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
+
 }

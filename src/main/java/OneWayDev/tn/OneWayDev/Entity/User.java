@@ -30,6 +30,7 @@ public class User implements UserDetails {
     String phone;
     private Boolean nonLocked;
     private Boolean enabled;
+    @Lob
     private String photoProfile;
 
     @ManyToMany
