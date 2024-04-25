@@ -13,8 +13,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -37,12 +36,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth-> auth.requestMatchers("/auth/**","/user/**")
+            .authorizeHttpRequests(auth-> auth.requestMatchers("/auth/**","/user/**","/model-stt/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated())
 
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(oauth2 -> oauth2
+                    .loginPage("/auth/login")
+                    .defaultSuccessUrl("/User")
+                    .failureUrl("/auth/login?error=true")
+                    .permitAll()
+                )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(Customizer.withDefaults())
             ).authenticationProvider(authenticationProvider)
@@ -50,8 +55,6 @@ public class SecurityConfig {
 
 
     }
-
-
 
     @Bean
     JwtDecoder jwtDecoder(){
